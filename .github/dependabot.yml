@@ -10,10 +10,10 @@ updates:
     cooldown:
       default-days: 7
     allow:
-      dependency-type: direct
-      update-types:
-        - version-update:semver-patch
-        - version-update:semver-minor
+      - dependency-type: direct
+        update-types:
+          - version-update:semver-patch
+          - version-update:semver-minor
     schedule:
       interval: 'weekly'
     groups:
