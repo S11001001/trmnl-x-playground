@@ -5,7 +5,22 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
+  - package-ecosystem: "npm"
     directory: "/" # Location of package manifests
+    cooldown:
+      default-days: 7
+    allow:
+      dependency-type: direct
+      update-types:
+        - version-update:semver-patch
+        - version-update:semver-minor
     schedule:
       interval: "weekly"
+    groups:
+      dev:
+        dependency-type: development
+      prod:
+        dependency-type: production
+    open-pull-requests-limit: 3
+    assignees:
+      - S11001001
