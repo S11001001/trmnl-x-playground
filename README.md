@@ -1,4 +1,4 @@
-# TRMNL X Custom Plugins — Stephen's drafts
+# TRMNL X Custom Plugins
 
 Three private plugin drafts for your TRMNL X, built around your interests.
 Each folder is self-contained: paste the `.liquid` into TRMNL's Edit Markup,
