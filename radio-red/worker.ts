@@ -14,9 +14,11 @@ const SOURCES = {
   equibase: `https://www.equibase.com/profiles/Results.cfm?type=Horse&search=${encodeURIComponent(HORSE)}`,
 };
 
-async function scrapeEquibase() {
+async function scrapeEquibase(): Promise<string | null> {
   try {
-    const res = await fetch(SOURCES.equibase, { headers: { "User-Agent": "trmnl-radio-red/1.0" } });
+    const res = await fetch(SOURCES.equibase, {
+      headers: { "User-Agent": "trmnl-radio-red/1.0" },
+    });
     if (!res.ok) return null;
     const html = await res.text();
     // Placeholder: extract the most recent line mentioning the horse.
@@ -29,7 +31,7 @@ async function scrapeEquibase() {
 }
 
 export default {
-  async fetch() {
+  async fetch(): Promise<Response> {
     const scraped = await scrapeEquibase();
 
     // Baseline facts; the worker keeps these fresh by merging scraped data.
@@ -58,7 +60,8 @@ export default {
       news: [
         {
           date: "2026-10-09",
-          title: "Radio Red 4th at 5/1 behind Factually Correct (6f dirt AOC $45k)",
+          title:
+            "Radio Red 4th at 5/1 behind Factually Correct (6f dirt AOC $45k)",
         },
       ],
     };
