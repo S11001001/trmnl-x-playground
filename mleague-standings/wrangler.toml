@@ -1,3 +1,9 @@
 name = "trmnl-mleague-standings"
-main = "worker.js"
+main = "worker.ts"
 compatibility_date = "2026-10-18"
+compatibility_flags = [
+  'no_nodejs_compat',
+  'no_nodejs_compat_v2',
+  'remove_nodejs_compat_eol_v24',
+  'remove_nodejs_compat_eol_v22',
+]
