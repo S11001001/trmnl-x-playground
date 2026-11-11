@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
     "module": "es2020",
+    "moduleResolution": "bundler",
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "alwaysStrict": true,
     "exactOptionalPropertyTypes": true,
+    "lib": ["ES2022"],
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitOverride": true,
@@ -18,7 +20,6 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
-  },
-  "include": ["mleague-standings/*.ts", "my-teams/*.ts", "radio-red/*.ts"]
+    "target": "ES2022"
+  }
 }
