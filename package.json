@@ -7,10 +7,13 @@
     "check": "tsc --noEmit",
     "deploy:mleague": "wrangler deploy --config mleague-standings/wrangler.toml",
     "deploy:my-teams": "wrangler deploy --config my-teams/wrangler.toml",
-    "deploy:radio-red": "wrangler deploy --config radio-red/wrangler.toml"
+    "deploy:radio-red": "wrangler deploy --config radio-red/wrangler.toml",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "version": "0.1.0",
   "devDependencies": {
+    "prettier": "^3.10.0",
     "typescript": "^7.0.2",
     "wrangler": "^4.160.1"
   }

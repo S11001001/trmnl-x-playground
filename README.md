@@ -41,6 +41,12 @@ npx wrangler deploy --config radio-red/wrangler.toml
 
 Copy the `*.workers.dev` URL into the plugin's Polling URL field.
 
+## Development
+
+Run `npm run format` to format supported files with Prettier, or
+`npm run format:check` to check formatting without changing files.
+Run `npm run check` to type-check the workers.
+
 ## E-ink notes
 
 - Markup uses the TRMNL design framework classes (`layout`, `grid`,
