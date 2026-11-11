@@ -5,8 +5,8 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/" # Location of package manifests
+  - package-ecosystem: 'npm'
+    directory: '/' # Location of package manifests
     cooldown:
       default-days: 7
     allow:
@@ -15,7 +15,7 @@ updates:
         - version-update:semver-patch
         - version-update:semver-minor
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     groups:
       dev:
         dependency-type: development

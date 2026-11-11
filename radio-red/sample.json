@@ -1,1 +1,27 @@
-{"horse":"Radio Red","last_race":{"date":"2026-10-08","finish":"4th of 8","odds":"5/1","race":8,"track":"Belmont Park","winner":"Factually Correct"},"news":[{"date":"2026-10-09","title":"Radio Red 4th at 5/1 behind Factually Correct (6f dirt AOC $45k)"}],"next_entry":{"date":"TBD","note":"No entry found as of last check. Belmont Park entries flagged prominently when posted.","race":"-","status":"none_found","track":"-"},"owner":"Reeves Thoroughbred Racing","trainer":"Danny Gargan","updated":"2026-10-18T09:00:00-04:00"}
+{
+  "horse": "Radio Red",
+  "last_race": {
+    "date": "2026-10-08",
+    "finish": "4th of 8",
+    "odds": "5/1",
+    "race": 8,
+    "track": "Belmont Park",
+    "winner": "Factually Correct"
+  },
+  "news": [
+    {
+      "date": "2026-10-09",
+      "title": "Radio Red 4th at 5/1 behind Factually Correct (6f dirt AOC $45k)"
+    }
+  ],
+  "next_entry": {
+    "date": "TBD",
+    "note": "No entry found as of last check. Belmont Park entries flagged prominently when posted.",
+    "race": "-",
+    "status": "none_found",
+    "track": "-"
+  },
+  "owner": "Reeves Thoroughbred Racing",
+  "trainer": "Danny Gargan",
+  "updated": "2026-10-18T09:00:00-04:00"
+}

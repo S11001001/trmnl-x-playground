@@ -5,12 +5,14 @@
 // NOTE: check https://m-league.jp/ HTML before first deploy; selectors below
 // are best-effort and may need one adjustment pass.
 
-const SOURCE = "https://m-league.jp/";
+const SOURCE = 'https://m-league.jp/';
 
 type Standing = { rank: number; team: string; points: number };
 
 async function fetchStandings(): Promise<Standing[] | null> {
-  const res = await fetch(SOURCE, { headers: { "User-Agent": "trmnl-mleague/1.0" } });
+  const res = await fetch(SOURCE, {
+    headers: { 'User-Agent': 'trmnl-mleague/1.0' },
+  });
   const html = await res.text();
 
   // Very defensive parse: look for team rows containing points.
@@ -36,15 +38,18 @@ export default {
   async fetch() {
     const standings = await fetchStandings();
     if (!standings) {
-      return new Response(JSON.stringify({ error: "parse failed, keeping last render" }), {
-        status: 502,
-        headers: { "content-type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: 'parse failed, keeping last render' }),
+        {
+          status: 502,
+          headers: { 'content-type': 'application/json' },
+        },
+      );
     }
     return Response.json({
-      season: "2026-27",
+      season: '2026-27',
       updated: new Date().toISOString(),
-      focus: ["Sega Sammy Phoenix", "Shibuya ABEMAS"],
+      focus: ['Sega Sammy Phoenix', 'Shibuya ABEMAS'],
       standings,
     });
   },

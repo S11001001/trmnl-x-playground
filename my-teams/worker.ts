@@ -2,33 +2,33 @@
 // Deploy, then point the TRMNL Private Plugin polling URL at the worker URL.
 // Uses ESPN's free scoreboard API (no key). Normalizes to the sample.json shape.
 
-type League = "NHL" | "NBA" | "MLB" | "MLS";
+type League = 'NHL' | 'NBA' | 'MLB' | 'MLS';
 
 const LEAGUES: [League, string][] = [
   [
-    "NHL",
-    "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard",
+    'NHL',
+    'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard',
   ],
   [
-    "NBA",
-    "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
+    'NBA',
+    'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
   ],
   [
-    "MLB",
-    "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
+    'MLB',
+    'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard',
   ],
   [
-    "MLS",
-    "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard",
+    'MLS',
+    'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard',
   ],
 ];
 
 // Team abbreviations to follow
 const FOLLOW: Record<League, string[]> = {
-  NHL: ["TOR"],
-  NBA: ["TOR"],
-  MLB: ["TOR"],
-  MLS: ["NYC"],
+  NHL: ['TOR'],
+  NBA: ['TOR'],
+  MLB: ['TOR'],
+  MLS: ['NYC'],
 };
 
 type Team = {
@@ -38,10 +38,10 @@ type Team = {
 };
 
 const NAMES: Record<string, Team> = {
-  "TOR-NHL": { team: "Toronto Maple Leafs", short: "Leafs", league: "NHL" },
-  "TOR-NBA": { team: "Toronto Raptors", short: "Raptors", league: "NBA" },
-  "TOR-MLB": { team: "Toronto Blue Jays", short: "Jays", league: "MLB" },
-  "NYC-MLS": { team: "NYCFC", short: "NYCFC", league: "MLS" },
+  'TOR-NHL': { team: 'Toronto Maple Leafs', short: 'Leafs', league: 'NHL' },
+  'TOR-NBA': { team: 'Toronto Raptors', short: 'Raptors', league: 'NBA' },
+  'TOR-MLB': { team: 'Toronto Blue Jays', short: 'Jays', league: 'MLB' },
+  'NYC-MLS': { team: 'NYCFC', short: 'NYCFC', league: 'MLS' },
 };
 
 type ScCompetitor = {
@@ -58,7 +58,7 @@ type ScEvent = {
   competitions?: { competitors?: ScCompetitor[] }[];
   status?: {
     type?: {
-      state: "pre" | "in" | "post";
+      state: 'pre' | 'in' | 'post';
       shortDetail?: string;
     };
   };
@@ -70,7 +70,7 @@ type Scoreboard = {
 
 async function fetchLeague(league: League, url: string) {
   const res = await fetch(url, {
-    headers: { "User-Agent": "trmnl-my-teams/1.0" },
+    headers: { 'User-Agent': 'trmnl-my-teams/1.0' },
   });
   if (!res.ok) return [];
   const data = (await res.json()) as Scoreboard;
@@ -85,7 +85,7 @@ async function fetchLeague(league: League, url: string) {
 function summarize(league: League, ev: ScEvent) {
   const comp = ev.competitions?.[0] || {};
   const competitors = comp.competitors || [];
-  const key = FOLLOW[league][0] + "-" + league;
+  const key = FOLLOW[league][0] + '-' + league;
   const meta = NAMES[key];
   const me = competitors.find(
     (c) => c.team?.abbreviation === FOLLOW[league][0],
@@ -94,35 +94,35 @@ function summarize(league: League, ev: ScEvent) {
     (c) => c.team?.abbreviation !== FOLLOW[league][0],
   );
   const state = ev.status?.type?.state; // pre | in | post
-  const detail = ev.status?.type?.shortDetail || "";
+  const detail = ev.status?.type?.shortDetail || '';
 
-  if (state === "pre") {
+  if (state === 'pre') {
     return {
       ...meta,
-      record: me?.records?.[0]?.summary || "",
-      last_result: "",
+      record: me?.records?.[0]?.summary || '',
+      last_result: '',
       next_game: detail,
-      streak: "",
+      streak: '',
     };
   }
-  const myScore = me?.score || "";
-  const oppScore = opp?.score || "";
-  const oppAbbr = opp?.team?.abbreviation || "";
+  const myScore = me?.score || '';
+  const oppScore = opp?.score || '';
+  const oppAbbr = opp?.team?.abbreviation || '';
   const won =
-    state === "post"
+    state === 'post'
       ? parseInt(myScore) > parseInt(oppScore)
-        ? "W"
-        : "L"
-      : "";
+        ? 'W'
+        : 'L'
+      : '';
   return {
     ...meta,
-    record: me?.records?.[0]?.summary || "",
+    record: me?.records?.[0]?.summary || '',
     last_result:
-      state === "in"
+      state === 'in'
         ? `${myScore}-${oppScore} vs ${oppAbbr} (LIVE)`
         : `${won} ${myScore}-${oppScore} vs ${oppAbbr}`,
-    next_game: state === "post" ? detail : "",
-    streak: "",
+    next_game: state === 'post' ? detail : '',
+    streak: '',
   };
 }
 
