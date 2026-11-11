@@ -1,0 +1,45 @@
+<div class="layout">
+  <div class="item">
+    <div class="content">
+      <span class="title">{{ horse }}</span>
+      <span class="label label--small">{{ trainer }} / {{ owner }}</span>
+    </div>
+  </div>
+  <div class="columns">
+    <div class="column">
+      <div class="item">
+        <div class="content">
+          <span class="label label--small">LAST RACE</span>
+          <span class="value value--small">{{ last_race.date }} R{{ last_race.race }} {{ last_race.track }}</span>
+          <span class="description description--small">{{ last_race.finish }} at {{ last_race.odds }}, winner {{ last_race.winner }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="item">
+        <div class="content">
+          <span class="label label--small">NEXT ENTRY</span>
+          {% if next_entry.status == "entered" %}
+          <span class="value value--small">{{ next_entry.date }} R{{ next_entry.race }} {{ next_entry.track }}</span>
+          <span class="description description--small">{{ next_entry.note }}</span>
+          {% else %}
+          <span class="value value--small">No entry yet</span>
+          <span class="description description--small">{{ next_entry.note }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% for n in news limit:3 %}
+  <div class="item">
+    <div class="content">
+      <span class="label label--small">{{ n.date }}</span>
+      <span class="description description--small">{{ n.title }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div class="title_bar">
+  <span class="title">Radio Red</span>
+  <span class="instance">{{ trmnl.plugin_settings.instance_name }}</span>
+</div>

@@ -1,0 +1,24 @@
+<div class="layout">
+  <div class="columns">
+    <div class="column">
+      {% for row in standings %}
+      <div class="item">
+        <div class="meta"><span class="value value--small value--tnums">{{ row.rank }}</span></div>
+        <div class="content">
+          {% if focus contains row.team %}
+          <span class="title title--small">{{ row.team }}</span>
+          {% else %}
+          <span class="label label--small">{{ row.team }}</span>
+          {% endif %}
+          <span class="value value--small value--tnums">{{ row.points }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <span class="label label--small">Season {{ season }} / updated {{ updated | date: "%b %d" }}</span>
+</div>
+<div class="title_bar">
+  <span class="title">M.League Standings</span>
+  <span class="instance">{{ trmnl.plugin_settings.instance_name }}</span>
+</div>

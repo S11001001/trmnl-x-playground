@@ -1,0 +1,22 @@
+<div class="layout">
+  <div class="grid grid--cols-2">
+    {% for t in teams %}
+    <div class="item">
+      <div class="content">
+        <span class="label label--small">{{ t.league }}</span>
+        <span class="title title--small">{{ t.short }}</span>
+        <span class="value value--small value--tnums">{{ t.record }}</span>
+        <span class="description description--small">{{ t.last_result }}</span>
+        <span class="label label--small label--underline">{{ t.next_game }}</span>
+        {% if t.streak != "" %}
+        <span class="label label--small">{{ t.streak }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<div class="title_bar">
+  <span class="title">My Teams</span>
+  <span class="instance">{{ trmnl.plugin_settings.instance_name }}</span>
+</div>
