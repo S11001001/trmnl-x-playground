@@ -1,1 +1,17 @@
-{"description":"TRMNL X private plugins: My Teams, M.League standings, Radio Red tracker","name":"trmnl-x-playground","private":true,"scripts":{"deploy:mleague":"wrangler deploy --config mleague-standings/wrangler.toml","deploy:my-teams":"wrangler deploy --config my-teams/wrangler.toml","deploy:radio-red":"wrangler deploy --config radio-red/wrangler.toml"},"version":"0.1.0"}
+{
+  "description": "TRMNL X private plugins: My Teams, M.League standings, Radio Red tracker",
+  "name": "trmnl-x-playground",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "deploy:mleague": "wrangler deploy --config mleague-standings/wrangler.toml",
+    "deploy:my-teams": "wrangler deploy --config my-teams/wrangler.toml",
+    "deploy:radio-red": "wrangler deploy --config radio-red/wrangler.toml"
+  },
+  "version": "0.1.0",
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "wrangler": "^4.160.1"
+  }
+}
