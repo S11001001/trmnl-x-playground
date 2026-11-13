@@ -23,8 +23,10 @@ const LEAGUES: [League, string][] = [
   ],
 ];
 
+type TeamAbbrev = 'TOR' | 'NYC';
+
 // Team abbreviations to follow
-const FOLLOW: Record<League, string[]> = {
+const FOLLOW: Record<League, TeamAbbrev[]> = {
   NHL: ['TOR'],
   NBA: ['TOR'],
   MLB: ['TOR'],
@@ -46,16 +48,33 @@ const NAMES: Record<string, Team> = {
 
 type ScCompetitor = {
   team?: {
-    abbreviation?: string;
+    abbreviation?: TeamAbbrev | string; // e.g. TOR
+    shortDisplayName?: string; // e.g. "Maple Leafs"
+    displayName?: string; // e.g. "Toronto Maple Leafs"
+    logo?: string; // e.g. "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/tor.png"
   };
+  homeAway?: 'home' | 'away';
   score: string; // numeric
+  // e.g. {name: overall, type: total...} then Home, Away records
+  // we assume [0] is overall
   records?: {
     summary?: string;
   }[];
 };
 
+type ScCompetition = {
+  competitors?: ScCompetitor[]; // should have 2 in all our cases
+  venue?: {
+    fullName?: string; // e.g. "Scotiabank Arena"
+    address?: {
+      city?: string; // e.g. "Toronto"
+    };
+  };
+};
+
 type ScEvent = {
-  competitions?: { competitors?: ScCompetitor[] }[];
+  // usually a 1-element array
+  competitions?: ScCompetition[];
   status?: {
     type?: {
       state: 'pre' | 'in' | 'post';
@@ -93,7 +112,7 @@ function summarize(league: League, ev: ScEvent) {
   const opp = competitors.find(
     (c) => c.team?.abbreviation !== FOLLOW[league][0],
   );
-  const state = ev.status?.type?.state; // pre | in | post
+  const state = ev.status?.type?.state;
   const detail = ev.status?.type?.shortDetail || '';
 
   if (state === 'pre') {
