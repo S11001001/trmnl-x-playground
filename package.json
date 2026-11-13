@@ -10,7 +10,9 @@
     "deploy:radio-red": "wrangler deploy --config radio-red/wrangler.toml",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "generate-types": "for c in */wrangler.toml; do npx wrangler types \"${c%/wrangler.toml}/worker-configuration.d.ts\" --config \"$c\"; done"
+    "generate-types": "for c in */wrangler.toml; do npx wrangler types \"${c%/wrangler.toml}/worker-configuration.d.ts\" --config \"$c\"; done",
+    "check-wrangler": "for c in */wrangler.toml; do npx wrangler types --check \"${c%/wrangler.toml}/worker-configuration.d.ts\" --config \"$c\"; done",
+    "ci": "npm run check && npm run format:check && npm run check-wrangler"
   },
   "version": "0.1.0",
   "devDependencies": {
