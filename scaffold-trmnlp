@@ -190,10 +190,12 @@ fi
 cd "$OUT"
 if [ "$MODE" = "serve" ]; then
   echo "Starting trmnlp serve — open http://localhost:4567 (Ctrl-C to stop)"
+  set +u
   exec "$TRMNLP_BIN" serve "${EXTRA_ARGS[@]}"
 else
   BUILD_ARGS=(build)
   [ "$PNG" -eq 1 ] && BUILD_ARGS+=(--png)
+  set +u
   "$TRMNLP_BIN" "${BUILD_ARGS[@]}" "${EXTRA_ARGS[@]}"
   echo "Built files are in $OUT/_build/"
 fi
