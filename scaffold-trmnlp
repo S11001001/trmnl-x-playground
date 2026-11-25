@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# scaffold-trmnlp — scaffold one trmnl-x-playground plugin into trmnlp's layout, then run trmnlp.
+#
+# These plugins are flat: <plugin>/full.liquid + <plugin>/sample.json (+ worker.ts, ...).
+# trmnlp expects: <project>/.trmnlp.yml + <project>/src/*.liquid + <project>/src/settings.yml,
+# and gets its preview data from the strategy in settings.yml (polling / static / webhook).
+# This script builds that layout in a scratch dir, symlinking your .liquid files
+# (so edits to the real templates show up), then runs `trmnlp serve` (default)
+# or `trmnlp build`.
+#
+# Usage:
+#   scaffold-trmnlp <plugin-dir> [serve|build] [options] [-- <extra trmnlp args>]
+#
+# Options:
+#   --polling-url URL   Use strategy: polling against URL instead of strategy: static
+#                       with sample.json inlined (e.g. your deployed worker, or
+#                       http://localhost:8787 while `wrangler dev` is running).
+#   --out DIR           Scaffold directory (default: <plugin-dir>.trmnlp, next to it)
+#   --copy              Copy .liquid files instead of symlinking them
+#   --png               (build only) also render PNGs — needs Firefox + ImageMagick
+#   -h, --help          Show usage
+#
+# Examples:
+#   ./scaffold-trmnlp my-teams
+#   ./scaffold-trmnlp radio-red build --png
+#   ./scaffold-trmnlp my-teams serve --polling-url https://trmnl-my-teams.<subdomain>.workers.dev
+#   ./scaffold-trmnlp mleague-standings serve -- --port 4568
+#   ./scaffold-trmnlp my-teams build --png -- --width 1872 --height 1404 --color-depth 4
+#
+# Requires: bash, python3 (stdlib only, for settings.yml generation), trmnlp
+# (gem install trmnl_preview — Ruby >= 4.0 — or the trmnl/trmnlp Docker image).
+# The scaffold dir is generated output: delete it any time, and add it to .gitignore
+# (it is NOT ignored by the repo's .gitignore today). Re-run after editing sample.json.
+set -euo pipefail
+
+usage() {
+  sed -n '2,/^set -euo pipefail$/p' "$0" | sed 's/^# \?//'
+}
+
+PLUGIN_DIR=""
+MODE="serve"
+POLLING_URL=""
+OUT=""
+COPY=0
+PNG=0
+EXTRA_ARGS=()
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    serve|build) MODE="$1"; shift ;;
+    --polling-url) POLLING_URL="${2:-}"; shift 2 ;;
+    --polling-url=*) POLLING_URL="${1#--polling-url=}"; shift ;;
+    --out) OUT="${2:-}"; shift 2 ;;
+    --out=*) OUT="${1#--out=}"; shift ;;
+    --copy) COPY=1; shift ;;
+    --png) PNG=1; shift ;;
+    --) shift; EXTRA_ARGS+=("$@"); break ;;
+    -*) echo "error: unknown option: $1" >&2; usage >&2; exit 2 ;;
+    *)
+      if [ -z "$PLUGIN_DIR" ]; then PLUGIN_DIR="$1"; else echo "error: unexpected argument: $1" >&2; usage >&2; exit 2; fi
+      shift ;;
+  esac
+done
+
+[ -n "$PLUGIN_DIR" ] || { echo "error: missing <plugin-dir>" >&2; usage >&2; exit 2; }
+[ -d "$PLUGIN_DIR" ] || { echo "error: no such directory: $PLUGIN_DIR" >&2; exit 2; }
+PLUGIN_DIR="$(cd "$PLUGIN_DIR" && pwd -P)"
+[ -f "$PLUGIN_DIR/full.liquid" ] || { echo "error: $PLUGIN_DIR/full.liquid not found" >&2; exit 2; }
+[ -f "$PLUGIN_DIR/sample.json" ] || { echo "error: $PLUGIN_DIR/sample.json not found (needed for static preview data)" >&2; exit 2; }
+command -v python3 >/dev/null || { echo "error: python3 is required (to generate settings.yml)" >&2; exit 1; }
+
+SLUG="$(basename "$PLUGIN_DIR")"
+case "$SLUG" in
+  my-teams)          NAME="My Teams";           DESC="My Teams at-a-glance"; REFRESH=30 ;;
+  mleague-standings) NAME="M.League Standings"; DESC="M.League standings";   REFRESH=360 ;;
+  radio-red)         NAME="Radio Red";          DESC="Radio Red tracker";    REFRESH=120 ;;
+  *)
+    NAME="$(echo "$SLUG" | tr '-' ' ' | awk '{for (i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')"
+    DESC="$NAME"
+    REFRESH=1440
+    ;;
+esac
+
+OUT="${OUT:-${PLUGIN_DIR}.trmnlp}"
+if [ -n "$POLLING_URL" ]; then STRATEGY="polling"; else STRATEGY="static"; fi
+
+# Only ever wipe a directory this script created (marked by .scaffold-trmnlp).
+if [ -e "$OUT" ]; then
+  if [ -f "$OUT/.scaffold-trmnlp" ]; then
+    rm -rf "$OUT"
+  elif [ -n "$(ls -A "$OUT" 2>/dev/null)" ]; then
+    echo "error: $OUT exists and is not a scaffold dir (no .scaffold-trmnlp marker)." >&2
+    echo "Remove it, or pass --out to use a different directory." >&2
+    exit 2
+  fi
+fi
+mkdir -p "$OUT/src"
+touch "$OUT/.scaffold-trmnlp"
+
+# Templates: symlink by default so edits to the real .liquid files show up.
+for liquid in "$PLUGIN_DIR"/*.liquid; do
+  [ -e "$liquid" ] || continue
+  if [ "$COPY" -eq 1 ]; then
+    cp "$liquid" "$OUT/src/$(basename "$liquid")"
+  else
+    ln -s "$liquid" "$OUT/src/$(basename "$liquid")"
+  fi
+done
+
+# settings.yml — same fields as trmnlp's own init template. Static mode inlines
+# sample.json as static_data; polling mode points at the given URL instead.
+python3 - "$PLUGIN_DIR/sample.json" "$OUT/src/settings.yml" "$STRATEGY" "$NAME" "$DESC" "$REFRESH" "$POLLING_URL" <<'PY'
+import json, sys
+
+sample_path, out_path, strategy, name, desc, refresh, polling_url = sys.argv[1:8]
+
+def q(s):
+    return "'" + s.replace("'", "''") + "'"
+
+if strategy == "static":
+    sample = json.load(open(sample_path))
+    pretty = json.dumps(sample, indent=2, ensure_ascii=False)
+    data = "\n".join("  " + line for line in pretty.splitlines())
+    static_yaml = "static_data: |\n" + data + "\n"
+    polling_yaml = "polling_url: ''\n"
+else:
+    static_yaml = "static_data: ''\n"
+    polling_yaml = "polling_url: %s\n" % q(polling_url)
+
+text = """---
+# Generated by scaffold-trmnlp from %s — regenerate after edits.
+strategy: %s
+name: %s
+description: %s
+framework_version: latest
+refresh_interval: %s
+no_screen_padding: 'no'
+dark_mode: 'no'
+polling_verb: get
+%s%s
+polling_headers: ''
+""" % (sample_path, strategy, q(name), q(desc), refresh, polling_yaml, static_yaml)
+
+open(out_path, "w").write(text)
+PY
+
+# .trmnlp.yml — local-only config, never uploaded to TRMNL.
+cat > "$OUT/.trmnlp.yml" <<EOF
+---
+# Generated by scaffold-trmnlp — safe to delete/regenerate.
+watch:
+  - .trmnlp.yml
+  - src
+custom_fields: {}
+time_zone: America/New_York
+variables:
+  trmnl:
+    plugin_settings:
+      instance_name: "$NAME"
+EOF
+
+TRMNLP_BIN="${TRMNLP_BIN:-trmnlp}"
+if ! command -v "$TRMNLP_BIN" >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+error: trmnlp not found on PATH.
+Install it first — either:
+  gem install trmnl_preview        # needs Ruby >= 4.0
+or use the Docker image (see https://github.com/usetrmnl/trmnlp):
+  docker run --rm --entrypoint cat trmnl/trmnlp /app/templates/init/bin/trmnlp > ~/.local/bin/trmnlp
+  chmod +x ~/.local/bin/trmnlp
+The scaffold is ready in the output dir; re-run this script once trmnlp is installed.
+EOF
+  exit 1
+fi
+
+echo "Scaffold ready: $OUT"
+echo "  plugin:   $SLUG ($NAME)"
+if [ -n "$POLLING_URL" ]; then
+  echo "  strategy: polling ($POLLING_URL)"
+else
+  echo "  strategy: static (sample.json inlined as static_data)"
+fi
+echo "  templates: $(ls "$OUT/src" | tr '\n' ' ')"
+echo "Note: $OUT is generated output — add it to .gitignore, and re-run this script after editing sample.json."
+if [ "$COPY" -eq 0 ]; then
+  echo "Note: templates are symlinked; if edits to full.liquid don't live-reload, restart serve or re-run with --copy."
+fi
+
+cd "$OUT"
+if [ "$MODE" = "serve" ]; then
+  echo "Starting trmnlp serve — open http://localhost:4567 (Ctrl-C to stop)"
+  exec "$TRMNLP_BIN" serve "${EXTRA_ARGS[@]}"
+else
+  BUILD_ARGS=(build)
+  [ "$PNG" -eq 1 ] && BUILD_ARGS+=(--png)
+  "$TRMNLP_BIN" "${BUILD_ARGS[@]}" "${EXTRA_ARGS[@]}"
+  echo "Built files are in $OUT/_build/"
+fi
