@@ -30,7 +30,4 @@ jobs:
         run: npm run format:check
 
       - name: Wrangler check
-        run: |
-          for c in */wrangler.toml; do
-            npx wrangler types --check "${c%/wrangler.toml}/worker-configuration.d.ts" --config "$c"
-          done
+        run: npm run check-wrangler
